@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>🎓 学术Agent｜论文小助手</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9fafb;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #1565c0;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 10px 24px;
+            background: #e3f2fd;
+            border: 1px solid #90a4ae;
+            border-radius: 6px;
+            font-weight: 600;
+            color: #0d47a1;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: #1565c0;
+            color: white;
+            border-color: #1565c0;
+        }
+        .tab-btn:hover:not(.active) {
+            background: #bbdefb;
+        }
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 24px;
+            margin-top: 10px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .upload-area {
+            border: 2px dashed #90a4ae;
+            padding: 24px;
+            text-align: center;
+            margin: 20px 0;
+            border-radius: 8px;
+            background-color: #f5f9ff;
+        }
+        .upload-icon {
+            font-size: 2.5rem;
+            color: #1565c0;
+            margin-bottom: 12px;
+        }
+        .upload-text {
+            font-size: 1.05rem;
+            color: #424242;
+            margin-bottom: 16px;
+        }
+        .preview-img {
+            max-width: 100%;
+            max-height: 200px;
+            margin: 12px auto;
+            display: block;
+            border-radius: 4px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            padding: 10px 22px;
+            background: #1565c0;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0 6px;
+            transition: all 0.2s;
+        }
+        .btn:hover:not(:disabled) {
+            background: #0d47a1;
+            transform: translateY(-1px);
+        }
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .btn-accent {
+            background: #2e7d32;
+        }
+        .btn-accent:hover:not(:disabled) {
+            background: #1b5e20;
+        }
+        .btn-warn {
+            background: #ef6c00;
+        }
+        .btn-warn:hover:not(:disabled) {
+            background: #d84315;
+        }
+        .task-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .task-btn {
+            padding: 8px 18px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+        .task-btn.active {
+            background: #1565c0;
+            color: white;
+        }
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 16px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: 6px;
+            font-family: 'SFMono-Regular', Consolas, monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+        th, td {
+            padding: 12px 14px;
+            text-align: left;
+            border: 1px solid #e0e0e0;
+        }
+        th {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9fb;
+        }
+        .status {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin: 16px 0;
+            font-weight: 500;
+        }
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+        .status.success {
+            background: #e8f5e9;
+            color: #27ae60;
+            border-left: 4px solid #4caf50;
+        }
+        .controls {
+            text-align: center;
+            margin: 24px 0;
+        }
+        .copy-btn {
+            padding: 8px 16px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 6px;
+        }
+        .copy-btn:hover:not(:disabled) {
+            background: #0d47a1;
+        }
+        .download-btn {
+            padding: 8px 16px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 6px;
+        }
+        .download-btn:hover:not(:disabled) {
+            background: #ef6c00;
+        }
+        .result-section {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px dashed #eee;
+        }
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .result-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1565c0;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #777;
+            font-size: 0.85rem;
+        }
+        @media (max-width: 768px) {
+            th, td {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🎓 学术Agent｜论文小助手</h1>
+    <p class="subtitle">规范公式 · 逐句翻译 · 结构化表格 · 在线即用</p>
+
+    <!-- 标签页导航 -->
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="formula">📐 公式识别</button>
+        <button class="tab-btn" data-tab="translate">🌍 文本翻译</button>
+        <button class="tab-btn" data-tab="table">📊 表格翻译</button>
+    </div>
+
+    <!-- 公式识别 Tab -->
+    <div id="formula" class="tab-content active">
+        <h2>数学公式 → LaTeX + Word格式</h2>
+        <p>上传公式截图，一键输出可直接粘贴到 Word 中的公式代码。</p>
+        
+        <div class="upload-area">
+            <div class="upload-icon">📷</div>
+            <p class="upload-text">请上传清晰的公式图片（PNG/JPEG）</p>
+            <input type="file" id="formula-input" accept="image/*" style="display:none;">
+            <button class="btn" onclick="document.getElementById('formula-input').click()">📁 选择图片</button>
+        </div>
+
+        <div class="task-group">
+            <button class="task-btn active" data-task="formula">公式识别</button>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-accent" onclick="runTask('formula')">🚀 开始处理</button>
+        </div>
+
+        <div id="formula-status" class="status" style="display:none;"></div>
+        <div class="result-section">
+            <div class="result-header">
+                <div class="result-title">【1】LaTeX  </div>
+                <button class="copy-btn" onclick="copySection('formula-latex')">📋 复制</button>
+            </div>
+            <pre id="formula-latex" style="margin:0;">[等待返回]</pre>
+        </div>
+        <div class="result-section">
+            <div class="result-header">
+                <div class="result-title">【2】Word 格式</div>
+                <button class="copy-btn" onclick="copySection('formula-linear')">📋 复制</button>
+            </div>
+            <pre id="formula-linear" style="margin:0;">[等待返回]</pre>
+        </div>
+    </div>
+
+    <!-- 文字翻译 Tab -->
+    <div id="translate" class="tab-content">
+        <h2>中英文字互译（逐句对齐）</h2>
+        <p>上传任意图片，自动识别并切分文本 → 学术专业 Google 翻译 → 严格对齐的双语对照。</p>
+        
+        <div class="upload-area">
+            <div class="upload-icon">📄</div>
+            <p class="upload-text">请上传含文本的高清图片（PNG/JPEG）</p>
+            <input type="file" id="translate-input" accept="image/*" style="display:none;">
+            <button class="btn" onclick="document.getElementById('translate-input').click()">📁 选择图片</button>
+        </div>
+
+        <div class="task-group">
+            <button class="task-btn" data-task="translate_zh2en">🇨🇳 中文 → English</button>
+            <button class="task-btn" data-task="translate_en2zh">🇬🇧 English → 中文</button>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-accent" onclick="runTask('translate')">🚀 开始处理</button>
+        </div>
+
+        <div id="translate-status" class="status" style="display:none;"></div>
+        <div class="result-section">
+            <div class="result-header">
+                <div class="result-title">📝 逐句双语对照</div>
+                <button class="copy-btn" onclick="copyBilingualTable()">📋 复制 Markdown 表格</button>
+            </div>
+            <div style="overflow-x:auto; margin-top:12px;">
+                <table id="bilingual-table">
+                    <thead>
+                        <tr>
+                            <th>原文</th>
+                            <th>翻译</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bilingual-tbody">
+                        <tr><td colspan="2" style="text-align:center;color:#999;">[等待返回]</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 表格翻译 Tab -->
+    <div id="table" class="tab-content">
+        <h2>表格识别与翻译</h2>
+        <p>上传任意表格图片，自动识别结构 → 翻译成目标语言 → 输出结构一致的译后表格。</p>
+        
+        <div class="upload-area">
+            <div class="upload-icon">📑</div>
+            <p class="upload-text">请上传表格图片（PNG/JPEG）</p>
+            <input type="file" id="table-input" accept="image/*" style="display:none;">
+            <button class="btn" onclick="document.getElementById('table-input').click()">📁 选择图片</button>
+        </div>
+
+        <div class="task-group">
+            <button class="task-btn" data-task="table_translate_zh2en">🇨🇳 表格 → English</button>
+            <button class="task-btn" data-task="table_translate_en2zh">🇬🇧 表格 → 中文</button>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-accent" onclick="runTask('table')">🚀 开始处理</button>
+        </div>
+
+        <div id="table-status" class="status" style="display:none;"></div>
+        <div class="result-section">
+            <div class="result-header">
+                <div class="result-title">🔍 翻译后表格（Markdown 格式）</div>
+                <button class="copy-btn" onclick="copyGenericMarkdown()">📋 复制 Markdown</button>
+            </div>
+            <pre id="table-markdown-output" style="display:none; margin-top:12px;">[等待返回]</pre>
+        </div>
+        <div class="result-section">
+            <div class="result-header">
+                <div class="result-title">📊 下载 Excel（保留原始结构）</div>
+                <button class="download-btn" id="download-excel-btn" style="display:none;" onclick="downloadExcel()">⬇️ 下载 Excel</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>💡 提示：首次使用会加载 SheetJS（约 500KB），之后缓存</p>
+    </footer>
+
+    <!-- SheetJS CDN（用于 Excel 下载） -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <script>
+        // 当前选中的任务类型
+        let currentTask = 'formula';
+        let currentInputId = 'formula-input';
+        let currentStatusId = 'formula-status';
+
+        // 初始化 tab 切换
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                const tabId = btn.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+
+                if (tabId === 'formula') {
+                    currentTask = 'formula';
+                    currentInputId = 'formula-input';
+                    currentStatusId = 'formula-status';
+                    resetTaskButtons('formula');
+                } else if (tabId === 'translate') {
+                    currentTask = 'translate_zh2en';
+                    currentInputId = 'translate-input';
+                    currentStatusId = 'translate-status';
+                    resetTaskButtons('translate');
+                } else if (tabId === 'table') {
+                    currentTask = 'table_translate_zh2en';
+                    currentInputId = 'table-input';
+                    currentStatusId = 'table-status';
+                    resetTaskButtons('table');
+                }
+                updateUI();
+            });
+        });
+
+        function resetTaskButtons(tabType) {
+            document.querySelectorAll('.task-btn').forEach(btn => btn.classList.remove('active'));
+            if (tabType === 'formula') {
+                document.querySelector('[data-task="formula"]').classList.add('active');
+            } else if (tabType === 'translate') {
+                document.querySelector('[data-task="translate_zh2en"]').classList.add('active');
+            } else if (tabType === 'table') {
+                document.querySelector('[data-task="table_translate_zh2en"]').classList.add('active');
+            }
+        }
+
+        document.querySelectorAll('.task-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.task-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTask = btn.getAttribute('data-task');
+            });
+        });
+
+        function updateUI() {
+            document.querySelectorAll('.status').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('pre, #bilingual-table').forEach(el => {
+                if (el.tagName === 'TABLE') {
+                    el.closest('div').style.display = 'none';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+            document.getElementById('download-excel-btn').style.display = 'none';
+            document.getElementById('table-markdown-output').style.display = 'none';
+        }
+
+        // 图片预览
+        function previewImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'preview-img';
+                const area = input.closest('.upload-area');
+                const oldImg = area.querySelector('.preview-img');
+                if (oldImg) oldImg.remove();
+                area.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ==================== 翻译工具 ====================
+        async function googleTranslate(text, source, target) {
+            try {
+                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${source}&tl=${target}&dt=t&q=${encodeURIComponent(text)}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                return data[0][0][0] || text;
+            } catch (e) {
+                console.warn('Google Translate failed:', e);
+                return text;
+            }
+        }
+
+        // ==================== 表格工具 ====================
+        function parseMarkdownTable(md) {
+            const lines = md.split('\n').map(l => l.trim()).filter(l => l);
+            let headerLine = -1, sepLine = -1;
+
+            for (let i = 0; i < lines.length - 1; i++) {
+                if (lines[i].startsWith('|') && lines[i + 1].startsWith('|') && lines[i + 1].includes('---')) {
+                    headerLine = i;
+                    sepLine = i + 1;
+                    break;
+                }
+            }
+
+            if (headerLine === -1) return null;
+
+            const headers = lines[headerLine]
+                .split('|')
+                .map(h => h.trim())
+                .filter(h => h !== '');
+
+            const rows = [];
+            for (let i = sepLine + 1; i < lines.length; i++) {
+                if (lines[i].startsWith('|')) {
+                    const cells = lines[i]
+                        .split('|')
+                        .map(c => c.trim())
+                        .filter(c => c !== '');
+                    if (cells.length === headers.length) {
+                        rows.push(cells);
+                    }
+                }
+            }
+
+            return { headers, rows };
+        }
+
+        function extractFirstMarkdownTable(md) {
+            const lines = md.split('\n');
+            let inTable = false;
+            let tableLines = [];
+            let headerLine = -1, sepLine = -1;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line.startsWith('|')) {
+                    if (!inTable) {
+                        headerLine = i;
+                        tableLines.push(line);
+                        inTable = true;
+                    } else {
+                        tableLines.push(line);
+                    }
+                } else if (inTable) {
+                    break;
+                }
+            }
+
+            if (tableLines.length >= 2) {
+                const sep = tableLines[1];
+                if (sep.includes('---') || sep.includes(':--') || sep.includes('--:')) {
+                    return tableLines.join('\n');
+                }
+            }
+            return md.trim();
+        }
+
+        async function translateTableData(tableData, sourceLang = 'zh', targetLang = 'en') {
+            const translatedHeaders = [];
+            for (const h of tableData.headers) {
+                const trans = await googleTranslate(h, sourceLang, targetLang);
+                translatedHeaders.push(trans);
+            }
+
+            const translatedRows = [];
+            for (const row of tableData.rows) {
+                const newRow = [];
+                for (const cell of row) {
+                    const trans = await googleTranslate(cell, sourceLang, targetLang);
+                    newRow.push(trans);
+                }
+                translatedRows.push(newRow);
+            }
+
+            return { headers: translatedHeaders, rows: translatedRows };
+        }
+
+        function tableDataToMarkdown(tableData) {
+            let md = '| ' + tableData.headers.join(' | ') + ' |\n';
+            md += '| ' + tableData.headers.map(() => '---').join(' | ') + ' |\n';
+            for (const row of tableData.rows) {
+                md += '| ' + row.join(' | ') + ' |\n';
+            }
+            return md;
+        }
+
+        // ==================== 核心：调用模型 ====================
+        async function callModel(file, task) {
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('task', task);
+
+            const res = await fetch('/process-image', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            return data.result;
+        }
+
+        // ==================== 任务执行 ====================
+        async function runTask(tabType) {
+            const fileInput = document.getElementById(currentInputId);
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('⚠️ 请先选择图片！');
+                return;
+            }
+
+            previewImage(fileInput);
+            const file = fileInput.files[0];
+
+            const statusEl = document.getElementById(currentStatusId);
+            statusEl.style.display = 'block';
+
+            try {
+                if (tabType === 'formula') {
+                    statusEl.textContent = '🔄 正在调用 Qwen-VL Plus 模型：公式识别...';
+                    const result = await callModel(file, 'formula');
+                    statusEl.textContent = '✅ 公式识别完成！';
+                    statusEl.className = 'status success';
+
+                    const latexMatch = result.match(/\\\[([\s\S]*?)\\\]/) || result.match(/\$\$([\s\S]*?)\$\$/);
+                    const latexContent = latexMatch ? latexMatch[1].trim() : result.trim();
+                    const linear = latexContent
+                        .replace(/\\int/g, '∫')
+                        .replace(/\\infty/g, '∞')
+                        .replace(/\\sqrt{([^}]+)}/g, '√$1')
+                        .replace(/\\frac{([^}]+)}{([^}]+)}/g, '$1/$2')
+                        .replace(/\\_/g, '_')
+                        .replace(/\\{/g, '{')
+                        .replace(/\\}/g, '}')
+                        .replace(/\\ /g, ' ');
+
+                    document.getElementById('formula-latex').textContent = latexContent || result;
+                    document.getElementById('formula-linear').textContent = linear || result;
+                    document.getElementById('formula-latex').style.display = 'block';
+                    document.getElementById('formula-linear').style.display = 'block';
+
+                } else if (tabType === 'translate') {
+                    // ===== 关键：先 OCR 获取中文 =====
+                    statusEl.textContent = '🔄 正在调用 Qwen-VL Plus 模型：OCR 识别中文...';
+                    const chineseText = await callModel(file, 'ocr_only'); // ← 后端需支持此 task
+
+                    statusEl.textContent = '🔄 正在翻译为英文...';
+                    const isZhToEn = currentTask === 'translate_zh2en';
+                    const sourceLang = isZhToEn ? 'zh' : 'en';
+                    const targetLang = isZhToEn ? 'en' : 'zh';
+
+                    // 按行分割（保留空行可能不必要）
+                    const lines = chineseText.split('\n').map(l => l.trim()).filter(l => l);
+                    const tbody = document.getElementById('bilingual-tbody');
+                    tbody.innerHTML = '';
+
+                    for (const line of lines) {
+                        const translated = await googleTranslate(line, sourceLang, targetLang);
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `<td>${line}</td><td>${translated}</td>`;
+                        tbody.appendChild(tr);
+                    }
+
+                    statusEl.textContent = '✅ 翻译完成！';
+                    statusEl.className = 'status success';
+                    document.querySelector('#bilingual-table').closest('div').style.display = 'block';
+
+                } else if (tabType === 'table') {
+                    // ===== 关键：先获取原始表格 =====
+                    statusEl.textContent = '🔄 正在调用 Qwen-VL Plus 模型：表格 OCR 识别...';
+                    const originalTableMd = await callModel(file, 'table_ocr_only'); // ← 后端需支持
+                    const cleanMd = extractFirstMarkdownTable(originalTableMd); // 清洗数据
+
+                    statusEl.textContent = '🔄 正在翻译表格内容...';
+                    const tableData = parseMarkdownTable(cleanMd);
+                    const preEl = document.getElementById('table-markdown-output');
+                    preEl.style.display = 'block';
+
+                    if (tableData) {
+                        const isZhToEn = currentTask === 'table_translate_zh2en';
+                        const translatedTable = await translateTableData(
+                            tableData,
+                            isZhToEn ? 'zh' : 'en',
+                            isZhToEn ? 'en' : 'zh'
+                        );
+                        const markdownOutput = tableDataToMarkdown(translatedTable);
+                        preEl.textContent = markdownOutput;
+
+                        // 准备 Excel
+                        const excelData = [translatedTable.headers, ...translatedTable.rows];
+                        const ws = XLSX.utils.aoa_to_sheet(excelData);
+                        const wb = XLSX.utils.book_new();
+                        XLSX.utils.book_append_sheet(wb, ws, "Translated Table");
+                        window.__TABLE_WB__ = wb;
+                        document.getElementById('download-excel-btn').style.display = 'inline-block';
+                    } else {
+                        // 非标准表格，按普通文本处理
+                        const lines = cleanMd.split('\n').map(l => l.trim()).filter(l => l);
+                        let md = '| 原文 | 翻译 |\n|------|------|\n';
+                        const isZhToEn = currentTask === 'table_translate_zh2en';
+                        for (const line of lines) {
+                            const translated = await googleTranslate(line, isZhToEn ? 'zh' : 'en', isZhToEn ? 'en' : 'zh');
+                            md += `| ${line.replace(/\|/g, '\\|')} | ${translated.replace(/\|/g, '\\|')} |\n`;
+                        }
+                        preEl.textContent = md;
+                    }
+
+                    statusEl.textContent = '✅ 表格翻译完成！';
+                    statusEl.className = 'status success';
+                }
+
+            } catch (e) {
+                statusEl.textContent = '❌ 错误：' + (e.message || '请求失败');
+                statusEl.className = 'status error';
+            }
+        }
+
+        // ==================== 复制功能 ====================
+        function copySection(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const text = el.textContent;
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    const btn = event.target;
+                    const original = btn.textContent;
+                    btn.textContent = '✅ 已复制！';
+                    setTimeout(() => btn.textContent = original, 2000);
+                })
+                .catch(err => {
+                    console.error('复制失败:', err);
+                    alert('复制失败，请手动 Ctrl+C');
+                });
+        }
+
+        function copyBilingualTable() {
+            const tbody = document.getElementById('bilingual-tbody');
+            const rows = tbody.querySelectorAll('tr');
+            if (rows.length === 0 || (rows.length === 1 && rows[0].querySelector('td[colspan]'))) {
+                alert('⚠️ 尚无翻译结果');
+                return;
+            }
+
+            let md = '|原文|翻译|\n|---|---|\n';
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 2) {
+                    const c1 = cells[0].textContent.trim().replace(/\|/g, '\\|');
+                    const c2 = cells[1].textContent.trim().replace(/\|/g, '\\|');
+                    md += `|${c1}|${c2}|\n`;
+                }
+            });
+
+            navigator.clipboard.writeText(md)
+                .then(() => {
+                    const btn = event.target;
+                    const original = btn.textContent;
+                    btn.textContent = '✅ 已复制！';
+                    setTimeout(() => btn.textContent = original, 2000);
+                })
+                .catch(err => {
+                    console.error('复制失败:', err);
+                    alert('复制失败，请手动复制表格');
+                });
+        }
+
+        function copyGenericMarkdown() {
+            const pre = document.getElementById('table-markdown-output');
+            if (!pre || !pre.textContent || pre.textContent === '[等待返回]') {
+                alert('⚠️ 尚无表格结果');
+                return;
+            }
+            navigator.clipboard.writeText(pre.textContent)
+                .then(() => {
+                    const btn = event.target;
+                    const original = btn.textContent;
+                    btn.textContent = '✅ 已复制！';
+                    setTimeout(() => btn.textContent = original, 2000);
+                })
+                .catch(err => {
+                    console.error('复制失败:', err);
+                    alert('复制失败');
+                });
+        }
+
+        function downloadExcel() {
+            if (window.__TABLE_WB__) {
+                XLSX.writeFile(window.__TABLE_WB__, 'Translated_Table.xlsx');
+            } else {
+                alert('⚠️ 暂无表格数据可下载');
+            }
+        }
+
+        // ==================== 初始化事件监听 ====================
+        document.getElementById('formula-input').addEventListener('change', () => previewImage(document.getElementById('formula-input')));
+        document.getElementById('translate-input').addEventListener('change', () => previewImage(document.getElementById('translate-input')));
+        document.getElementById('table-input').addEventListener('change', () => previewImage(document.getElementById('table-input')));
+
+        // 默认隐藏所有结果区域
+        updateUI();
+    </script>
+</body>
+</html>
